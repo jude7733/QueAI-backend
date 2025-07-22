@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from agent.graph import graph
 from models import ChatRequest
+import dotenv
+
+dotenv.load_dotenv()
 
 
 app = FastAPI()
