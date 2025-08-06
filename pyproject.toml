@@ -5,12 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi[standard]>=0.116.1",
-    "ipykernel>=6.29.5",
-    "ipython>=9.4.0",
-    "langchain-community>=0.3.27",
-    "langchain-tavily>=0.2.10",
-    "langchain[google-genai]>=0.3.26",
-    "langgraph>=0.5.3",
-    "wikipedia>=1.4.0",
+  "fastapi[standard]>=0.116.1",
+  "ipykernel>=6.29.5",
+  "ipython>=9.4.0",
+  "langchain-community>=0.3.27",
+  "langchain-tavily>=0.2.10",
+  "langchain[google-genai]>=0.3.26",
+  "langgraph>=0.5.3",
+  "wikipedia>=1.4.0",
 ]

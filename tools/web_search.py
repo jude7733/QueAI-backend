@@ -1,35 +1,36 @@
 from langchain_tavily import TavilySearch
 from langchain_core.tools import tool
+import getpass
+import os
+import dotenv
+
+dotenv.load_dotenv()
 
 
+# TODO: Add extractor
+# TODO: Add types Basemodel
 @tool
 def web_search_tool(query: str) -> str:
     """
-    Perform a live web search for up-to-date information and return raw content from top results.
-
-    The output may contain multiple paragraphs of raw data.
-    It is your job to:
-    - Clean and synthesize the useful information.
-    - Extract relevant points that answer the user's question.
-    - Discard repeated, irrelevant, or low quality content.
-    - Translate, explain, or summarize information as needed, depending on user prompt.
-
-    Always assume the output may be noisy and requires processing before showing to the user.
+    Generic web search tool. Use this tool to fetch live information from the web.
 
     Args:
         query: The search query string.
 
     Returns:
-    Raw combined content from top search results. You must post-process this information.
+        Final answer string from the search results.
     """
+    if not os.environ.get("TAVILY_API_KEY"):
+        os.environ["TAVILY_API_KEY"] = getpass.getpass("Tavily API key:\n")
+
     web_tool = TavilySearch(
-        max_results=2,
+        max_results=3,
         topic="general",
-        # include_answer=False,
+        include_answer=True,
         # include_raw_content=False,
         # include_images=False,
         # include_image_descriptions=False,
-        # search_depth="basic",
+        search_depth="advanced",
         # time_range="day",
         # include_domains=None,
         # exclude_domains=None
@@ -37,21 +38,19 @@ def web_search_tool(query: str) -> str:
 
     try:
         search_results = web_tool.invoke(query)
+        urls = [item["url"] for item in search_results["results"]]
+        print("-> Search URLs:", urls)
 
-        # Check if the search returned any results
-        if not search_results:
-            print("-> No results found.")
-            return "No results found."
-
-        content_values = [
-            item["content"]
-            for item in search_results.get("results", [])
-            if "content" in item
-        ]
-        return "\n\n".join(content_values)
+        return search_results["answer"]
 
     except Exception as e:
         # Catch any other exceptions during the process
         error_message = f"An error occurred while searching the web: {str(e)}"
         print(f"-> Error: {error_message}")
         return error_message
+
+
+if __name__ == "__main__":
+    query = input("Enter your search query: ")
+    results = web_search_tool(query)
+    print("Search Results:\n", results)
