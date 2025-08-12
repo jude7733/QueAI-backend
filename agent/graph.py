@@ -30,6 +30,6 @@ graph_builder.add_conditional_edges(
 )
 graph_builder.add_edge("tools", "chatbot")
 
-# TODO: Add processing node to handle messages
 
 graph = graph_builder.compile()
+

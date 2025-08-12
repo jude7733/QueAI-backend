@@ -3,23 +3,22 @@ from langchain_core.tools import tool
 import getpass
 import os
 import dotenv
+from pydantic import BaseModel, Field
 
 dotenv.load_dotenv()
 
 
-# TODO: Add extractor
-# TODO: Add types Basemodel
-@tool
+class SearchInput(BaseModel):
+    """Basic input validation for web search"""
+
+    query: str = Field(..., description="Search query string")
+
+
+@tool(
+    description="Generic web search tool. Use this tool to fetch live information from the web",
+    args_schema=SearchInput,
+)
 def web_search_tool(query: str) -> str:
-    """
-    Generic web search tool. Use this tool to fetch live information from the web.
-
-    Args:
-        query: The search query string.
-
-    Returns:
-        Final answer string from the search results.
-    """
     if not os.environ.get("TAVILY_API_KEY"):
         os.environ["TAVILY_API_KEY"] = getpass.getpass("Tavily API key:\n")
 
@@ -44,13 +43,11 @@ def web_search_tool(query: str) -> str:
         return search_results["answer"]
 
     except Exception as e:
-        # Catch any other exceptions during the process
         error_message = f"An error occurred while searching the web: {str(e)}"
         print(f"-> Error: {error_message}")
         return error_message
 
 
 if __name__ == "__main__":
-    query = input("Enter your search query: ")
-    results = web_search_tool(query)
+    results = web_search_tool(query="Current temperature of kochi")
     print("Search Results:\n", results)
