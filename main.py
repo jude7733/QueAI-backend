@@ -36,7 +36,7 @@ async def chat_stream_endpoint(request: ChatRequest):
             }
         ):
             if "chatbot" in event:
-                yield event["chatbot"]["messages"][-1].content + "\n"
+                yield event["chatbot"]["messages"][-1].content
 
     return StreamingResponse(event_generator(), media_type="text/plain")
 
