@@ -23,13 +23,13 @@ def web_search_tool(query: str) -> str:
         os.environ["TAVILY_API_KEY"] = getpass.getpass("Tavily API key:\n")
 
     web_tool = TavilySearch(
-        max_results=3,
+        max_results=1,
         topic="general",
         include_answer=True,
         # include_raw_content=False,
         # include_images=False,
         # include_image_descriptions=False,
-        search_depth="advanced",
+        search_depth="basic",
         # time_range="day",
         # include_domains=None,
         # exclude_domains=None
