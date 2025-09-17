@@ -12,7 +12,7 @@ def load_system_prompt(filepath="system_prompt.txt"):
 
 
 def chatbot(state):
-    model_name = state.get("model_name", "gemini-2.5-flash")
+    model_name = state.get("model_name", "gemini-2.5-pro")
     system_prompt = load_system_prompt()
 
     # Initialize the chat model
@@ -31,5 +31,4 @@ def chatbot(state):
         messages.insert(0, SystemMessage(content=system_prompt))
 
     # Run model with tools
-    response = llm_with_tools.invoke(messages)
-    return {"messages": [response]}
+    return {"messages": [llm_with_tools.invoke(state["messages"])]}
