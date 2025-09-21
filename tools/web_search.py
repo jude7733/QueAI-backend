@@ -49,5 +49,6 @@ def web_search_tool(query: str) -> str:
 
 
 if __name__ == "__main__":
-    results = web_search_tool(query="Current temperature of kochi")
+    query = input("Enter your search query: ")
+    results = web_search_tool.invoke({"query": query})
     print("Search Results:\n", results)
