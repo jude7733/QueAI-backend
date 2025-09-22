@@ -1,5 +1,4 @@
 from tools.image_tool import generate_image_tool
-from tools.web_search import web_search_tool
-from tools.wikipedia_tool import search_wikipedia
+from tools.web_tools import search_arxiv, search_web, search_wiki
 
-tools = [web_search_tool, search_wikipedia, generate_image_tool]
+tools = [search_web, search_wiki, search_arxiv, generate_image_tool]
