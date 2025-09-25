@@ -20,7 +20,7 @@ class SearchInput(BaseModel):
 
 
 @tool(
-    description="Generic web search tool. Use this tool to fetch live information from the web",
+    description="Use this tool to fetch live information from the web",
     args_schema=SearchInput,
 )
 def search_web(query: str) -> str:
@@ -59,7 +59,7 @@ def search_web(query: str) -> str:
 )
 def search_wiki(query: str) -> str:
     api_wrapper = WikipediaAPIWrapper(
-        top_k_results=2,
+        top_k_results=1,
     )
     wikipedia_tool = WikipediaQueryRun(api_wrapper=api_wrapper)
     result = wikipedia_tool.run(query)

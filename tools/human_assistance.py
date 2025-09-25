@@ -1,0 +1,9 @@
+from langchain_core.tools import tool
+from langgraph.types import interrupt
+
+
+@tool
+def human_assistance_provider(query: str) -> str:
+    """Request assistance from a human."""
+    human_response = interrupt({"query": query})
+    return human_response["data"]
