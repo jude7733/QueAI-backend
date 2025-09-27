@@ -28,9 +28,9 @@ def search_web(query: str) -> str:
         os.environ["TAVILY_API_KEY"] = getpass.getpass("Tavily API key:\n")
 
     web_tool = TavilySearch(
-        max_results=1,
-        topic="general",
-        include_answer=True,
+        max_results=3,
+        # topic="general",
+        # include_answer=True,
         # include_raw_content=False,
         # include_images=False,
         # include_image_descriptions=False,
@@ -45,7 +45,7 @@ def search_web(query: str) -> str:
         urls = [item["url"] for item in search_results["results"]]
         print("-> Search URLs:", urls)
 
-        return search_results["answer"]
+        return search_results["results"]
 
     except Exception as e:
         error_message = f"An error occurred while searching the web: {str(e)}"
