@@ -1,11 +1,11 @@
+from uuid import uuid4
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
 )
-
-import pprint
-from typing import Annotated, Union
+from typing import Annotated
+from langgraph.config import get_stream_writer
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing_extensions import TypedDict
 
@@ -14,28 +14,21 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.sqlite import SqliteSaver
 from custom_tools import queai_tools
 from utils import load_system_prompt
-from langchain_core.agents import AgentAction, AgentFinish
-import operator
 import sqlite3
-
-
-class State(TypedDict):
-    messages: Annotated[list, add_messages]
 
 
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
-    agent_outcome: Union[AgentAction, AgentFinish, None]
-    intermediate_steps: Annotated[list[tuple[AgentAction, str]], operator.add]
 
 
 graph_builder = StateGraph(AgentState)
 
-llm = init_chat_model("gemini-2.5-pro", model_provider="google_genai")
+llm = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
 llm_with_tools = llm.bind_tools(queai_tools)
 
 
 def chatbot(state: AgentState):
+    """Question answering agent with access to tools."""
     system_prompt = load_system_prompt()
     messages = state.get("messages", [])
 
@@ -46,8 +39,14 @@ def chatbot(state: AgentState):
     ):
         messages.insert(0, SystemMessage(content=system_prompt))
 
+    writer = get_stream_writer()
     message = llm_with_tools.invoke(state["messages"])
-    return {"messages": [message]}
+    for chunk in message.model_dump_json().splitlines():
+        writer({"data": chunk, "type": "chatbot"})
+
+    return {
+        "messages": [message],
+    }
 
 
 tool_node = ToolNode(queai_tools)
@@ -64,19 +63,20 @@ graph_builder.add_conditional_edges(
 )
 graph_builder.add_edge("tools", "chatbot")
 
-
 sqlite_connection = sqlite3.connect("checkpoint.sqlite", check_same_thread=False)
 memory = SqliteSaver(sqlite_connection)
-queai_graph = graph_builder.compile(checkpointer=memory, debug=True)
+queai_graph = graph_builder.compile(checkpointer=memory)
 
 if __name__ == "__main__":
-    config = {"configurable": {"thread_id": 1}}
+    config = {"configurable": {"thread_id": uuid4()}}
 
-    pprint.pprint(
-        queai_graph.invoke(
-            {"messages": HumanMessage(content="When is the next world cup?")},
-            config=config,
-        )
-    )
-
-    # queai_graph.get_state(config=config)
+    for chunk in queai_graph.stream(
+        {
+            "messages": [
+                HumanMessage(content="When was the last SpaceX rocket launched?")
+            ],
+        },
+        config=config,
+        stream_mode=["messages"],
+    ):
+        print(chunk)

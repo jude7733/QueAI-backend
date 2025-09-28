@@ -8,6 +8,8 @@ aiohttp==3.12.14
     #   langchain-tavily
 aiosignal==1.4.0
     # via aiohttp
+aiosqlite==0.21.0
+    # via langgraph-checkpoint-sqlite
 annotated-types==0.7.0
     # via pydantic
 anyio==4.9.0
@@ -80,6 +82,8 @@ googleapis-common-protos==1.70.0
     # via
     #   google-api-core
     #   grpcio-status
+grandalf==0.8
+    # via queai-backend (pyproject.toml)
 greenlet==3.2.3
     # via sqlalchemy
 grpcio==1.73.1
@@ -152,7 +156,10 @@ langgraph==0.5.3
 langgraph-checkpoint==2.1.1
     # via
     #   langgraph
+    #   langgraph-checkpoint-sqlite
     #   langgraph-prebuilt
+langgraph-checkpoint-sqlite==2.0.11
+    # via queai-backend (pyproject.toml)
 langgraph-prebuilt==0.5.2
     # via langgraph
 langgraph-sdk==0.1.73
@@ -246,6 +253,8 @@ pygments==2.19.2
     #   rich
 pymupdf==1.26.4
     # via queai-backend (pyproject.toml)
+pyparsing==3.2.5
+    # via grandalf
 python-dotenv==1.1.1
     # via
     #   pydantic-settings
@@ -297,6 +306,8 @@ sqlalchemy==2.0.41
     # via
     #   langchain
     #   langchain-community
+sqlite-vec==0.1.6
+    # via langgraph-checkpoint-sqlite
 stack-data==0.6.3
     # via ipython
 starlette==0.47.2
@@ -316,6 +327,7 @@ typer==0.16.0
     #   fastapi-cloud-cli
 typing-extensions==4.14.1
     # via
+    #   aiosqlite
     #   beautifulsoup4
     #   fastapi
     #   google-genai
