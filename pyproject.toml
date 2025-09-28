@@ -11,6 +11,7 @@ dependencies = [
   "grandalf>=0.8",
   "ipython>=9.4.0",
   "langchain-community>=0.3.27",
+  "langchain-experimental>=0.3.4",
   "langchain-tavily>=0.2.10",
   "langchain[google-genai]>=0.3.26",
   "langgraph>=0.5.3",
