@@ -2,6 +2,7 @@ import pprint
 from uuid import uuid4
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 from graph_builder import queai_graph
 import dotenv
@@ -17,6 +18,15 @@ class ChatRequest(BaseModel):
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Content-Type"],
+)
 
 
 async def event_generator(request: ChatRequest):

@@ -68,7 +68,7 @@ memory = SqliteSaver(sqlite_connection)
 queai_graph = graph_builder.compile(checkpointer=memory)
 
 if __name__ == "__main__":
-    config = {"configurable": {"thread_id": uuid4()}}
+    config = {"configurable": {"thread_id": str(uuid4())}}
 
     for chunk in queai_graph.stream(
         {
@@ -77,6 +77,6 @@ if __name__ == "__main__":
             ],
         },
         config=config,
-        stream_mode=["messages"],
+        stream_mode="updates",
     ):
         print(chunk)
