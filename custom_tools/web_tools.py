@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, TypedDict
 from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.retrievers import ArxivRetriever
 from langchain_core.documents import Document
+from langgraph.config import get_stream_writer
 from langchain_tavily import TavilySearch
 from langchain_core.tools import tool
 import getpass
@@ -19,6 +20,10 @@ class SearchInput(BaseModel):
     query: str = Field(..., description="Search query string")
 
 
+class CustomState(TypedDict):
+    sources: List[str]
+
+
 @tool(
     description="Use this tool to fetch live information from the web",
     args_schema=SearchInput,
@@ -32,8 +37,8 @@ def search_web(query: str) -> str:
         # topic="general",
         # include_answer=True,
         # include_raw_content=False,
-        # include_images=False,
-        # include_image_descriptions=False,
+        include_images=False,
+        include_image_descriptions=True,
         search_depth="basic",
         # time_range="day",
         # include_domains=None,
@@ -41,9 +46,15 @@ def search_web(query: str) -> str:
     )
 
     try:
+        writer = get_stream_writer()
         search_results = web_tool.invoke(query)
         urls = [item["url"] for item in search_results["results"]]
-        print("-> Search URLs:", urls)
+        writer(
+            {
+                "data": {"sources": urls, "images": search_results["images"]},
+                "type": "tool",
+            }
+        )
 
         return search_results["results"]
 
