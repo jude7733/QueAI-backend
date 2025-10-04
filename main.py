@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
-from graph_builder import queai_graph
+from graph import supervisor
 import dotenv
 from pydantic import BaseModel
 
@@ -31,7 +31,7 @@ app.add_middleware(
 
 async def event_generator(request: ChatRequest):
     config = {"configurable": {"thread_id": request.thread_id}}
-    for chunk in queai_graph.stream(
+    for chunk in supervisor.stream(
         {
             "messages": [HumanMessage(content=request.user_input)],
         },
