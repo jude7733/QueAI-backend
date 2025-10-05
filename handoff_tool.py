@@ -12,12 +12,13 @@ def create_handoff_tool(*, agent_name: str, description: str | None = None):
 
     @tool(name, description=description)
     def handoff_tool(
+        task: str,
         state: Annotated[MessagesState, InjectedState],
         tool_call_id: Annotated[str, InjectedToolCallId],
     ) -> Command:
         tool_message = {
             "role": "tool",
-            "content": f"Successfully transferred to {agent_name}",
+            "content": f"Successfully transferred to {agent_name}: {task}",
             "name": name,
             "tool_call_id": tool_call_id,
         }
@@ -32,15 +33,10 @@ def create_handoff_tool(*, agent_name: str, description: str | None = None):
 
 assign_to_research_agent = create_handoff_tool(
     agent_name="research_agent",
-    description="Assign task to a researcher agent.",
-)
-
-assign_to_math_agent = create_handoff_tool(
-    agent_name="math_agent",
-    description="Assign task to a math agent.",
+    description="Assign a research task to the research agent.",
 )
 
 assign_to_coder_agent = create_handoff_tool(
     agent_name="code_agent",
-    description="Assign task to a python program executable agent",
+    description="Assign a coding task to the python program executable agent.",
 )

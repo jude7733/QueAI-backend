@@ -25,7 +25,7 @@ class CustomState(TypedDict):
 
 
 @tool(
-    description="Use this tool to fetch live information from the web",
+    description="Use this tool to fetch live information from the web using TavilySearch",
     args_schema=SearchInput,
 )
 def search_web(query: str) -> str:

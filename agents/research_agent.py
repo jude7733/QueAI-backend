@@ -11,7 +11,7 @@ def research_agent():
         prompt=(
             "You are a research agent.\n\n"
             "INSTRUCTIONS:\n"
-            "- Assist ONLY with research-related tasks,\n"
+            "- Assist ONLY with broswing live data and research-related tasks,\n"
             "- After you're done with your tasks, respond to the supervisor directly\n"
             "- Respond ONLY with the results of your work, do NOT include ANY other text."
         ),

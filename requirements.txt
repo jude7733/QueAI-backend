@@ -134,17 +134,22 @@ langchain==0.3.26
     #   langchain-community
     #   langchain-tavily
 langchain-community==0.3.27
-    # via queai-backend (pyproject.toml)
+    # via
+    #   queai-backend (pyproject.toml)
+    #   langchain-experimental
 langchain-core==0.3.69
     # via
     #   langchain
     #   langchain-community
+    #   langchain-experimental
     #   langchain-google-genai
     #   langchain-tavily
     #   langchain-text-splitters
     #   langgraph
     #   langgraph-checkpoint
     #   langgraph-prebuilt
+langchain-experimental==0.3.4
+    # via queai-backend (pyproject.toml)
 langchain-google-genai==2.1.8
     # via langchain
 langchain-tavily==0.2.11
