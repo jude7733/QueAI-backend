@@ -64,7 +64,7 @@ async def event_generator(request: ChatRequest):
         if not event_data["payload"]:
             continue
 
-        yield json.dumps(event_data, indent=2)
+        yield json.dumps(event_data, indent=2) + "\n"
 
 
 @app.post("/chat/stream")
