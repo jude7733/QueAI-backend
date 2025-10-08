@@ -40,3 +40,8 @@ assign_to_coder_agent = create_handoff_tool(
     agent_name="code_agent",
     description="Assign a coding task to the python program executable agent.",
 )
+
+assign_to_image_agent = create_handoff_tool(
+    agent_name="image_agent",
+    description="Assign a image generation task to the image agent.",
+)

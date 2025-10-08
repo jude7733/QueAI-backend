@@ -3,6 +3,7 @@ from langgraph.prebuilt import create_react_agent
 from handoff_tool import (
     assign_to_research_agent,
     assign_to_coder_agent,
+    assign_to_image_agent,
 )
 
 
@@ -10,14 +11,12 @@ def supervisor_agent():
     llm = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
     supervisor_agent = create_react_agent(
         llm,
-        tools=[
-            assign_to_research_agent,
-            assign_to_coder_agent,
-        ],
+        tools=[assign_to_research_agent, assign_to_coder_agent, assign_to_image_agent],
         prompt=(
             "You are QueAI made by QueAI team, a supervisor managing three agents:\n"
             "- a research agent. Assign to fetch live data from internet and research-related tasks to this agent\n"
             "- a code agent. Assign math and code-related execution tasks to this agent\n"
+            "- a image agent. Assign image generation and drawing tasks to this agent\n"
             "Assign work to one agent at a time, do not call agents in parallel.\n"
             "Do not do any work yourself."
         ),

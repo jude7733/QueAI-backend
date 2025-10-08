@@ -1,21 +1,54 @@
-from langchain.chat_models import init_chat_model
-from langgraph.prebuilt import create_react_agent
-from custom_tools import image_tools
+from langchain_core.messages import HumanMessage
+from custom_tools.image_tool import generate_image
+import dotenv
+
+dotenv.load_dotenv()
 
 
-def image_agent():
-    llm = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
-    image_agent = create_react_agent(
-        llm,
-        tools=image_tools,
-        prompt=(
-            "You are a image generating agent.\n\n"
-            "INSTRUCTIONS:\n"
-            "- Assist ONLY with image generation tasks,\n"
-            "- After you're done with your tasks, respond to the supervisor directly\n"
-            "- Respond ONLY with the results of your work, do NOT include ANY other text."
-        ),
-        name="image_agent",
-    )
+def image_agent(state):
+    messages = state["messages"]
+    last_message = messages[-1].content
 
-    return image_agent
+    if "image" in last_message.lower():
+        prompt = (
+            last_message.replace("generate image", "")
+            .replace("create image", "")
+            .strip()
+        )
+
+        result = generate_image(prompt)
+
+        if result["success"]:
+            # Add image data to state
+            updated_state = {
+                "messages": [
+                    HumanMessage(
+                        content=f"Image generated successfully for prompt: {prompt}"
+                    )
+                ],
+                "generated_image": {
+                    "data": result["image_data"],
+                    "mime_type": result["mime_type"],
+                    "prompt": result["prompt"],
+                    "file_path": result["image_path"],
+                },
+            }
+            return updated_state
+        else:
+            return {
+                "messages": [
+                    HumanMessage(content=f"Image generation failed: {result['error']}")
+                ],
+                "generated_image": None,
+            }
+
+    return {
+        "messages": [HumanMessage(content="No image generation requested.")],
+        "generated_image": None,
+    }
+
+
+if __name__ == "__main__":
+    test_state = {"messages": [HumanMessage(content="generate of a cartoon plane")]}
+    result = image_agent(test_state)
+    print("Result:", result)

@@ -4,6 +4,7 @@ from langgraph.graph import START, END, MessagesState, StateGraph
 from agents.supervisor_agent import supervisor_agent
 from agents.code_agent import code_agent
 from agents.research_agent import research_agent
+from agents.image_agent import image_agent
 from utils import pretty_print_messages
 import sqlite3
 import dotenv
@@ -17,13 +18,15 @@ supervisor = (
     StateGraph(MessagesState)
     .add_node(
         supervisor_agent(),
-        destinations=("research_agent", "code_agent", END),
+        destinations=("research_agent", "code_agent", "image_agent", END),
     )
     .add_node(research_agent())
     .add_node(code_agent())
+    .add_node(image_agent)
     .add_edge(START, "supervisor")
     .add_edge("research_agent", "supervisor")
     .add_edge("code_agent", "supervisor")
+    .add_edge("image_agent", "supervisor")
     .compile(checkpointer=memory)
 )
 
