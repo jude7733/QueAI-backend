@@ -1,11 +1,19 @@
+from typing import Annotated, Optional, TypedDict
 from uuid import uuid4
+from langchain_core.messages import (
+    AIMessageChunk,
+    AnyMessage,
+    HumanMessage,
+    HumanMessageChunk,
+)
 from langgraph.checkpoint.sqlite import SqliteSaver
-from langgraph.graph import START, END, MessagesState, StateGraph
+from langgraph.graph import START, END, StateGraph, add_messages
 from agents.supervisor_agent import supervisor_agent
 from agents.code_agent import code_agent
 from agents.research_agent import research_agent
 from agents.image_agent import image_agent
 from utils import pretty_print_messages
+import pprint
 import sqlite3
 import dotenv
 
@@ -14,8 +22,23 @@ dotenv.load_dotenv()
 sqlite_connection = sqlite3.connect("checkpoint.sqlite", check_same_thread=False)
 memory = SqliteSaver(sqlite_connection)
 
+
+class GeneratedImage(TypedDict, total=False):
+    data: str
+    mime_type: str
+    prompt: str
+    file_path: Optional[str]
+    url: Optional[str]
+    filename: Optional[str]
+
+
+class AgentState(TypedDict):
+    messages: Annotated[list[AnyMessage], add_messages]
+    generated_image: Optional[GeneratedImage]
+
+
 supervisor = (
-    StateGraph(MessagesState)
+    StateGraph(AgentState)
     .add_node(
         supervisor_agent(),
         destinations=("research_agent", "code_agent", "image_agent", END),
@@ -30,24 +53,33 @@ supervisor = (
     .compile(checkpointer=memory)
 )
 
+
+def serialise_ai_message_chunk(chunk):
+    if isinstance(chunk, AIMessageChunk):
+        return chunk.content
+    if isinstance(chunk, HumanMessageChunk):
+        return chunk.content
+
+    else:
+        raise TypeError(
+            f"Object of type {type(chunk).__name__} is not correctly formatted for serialisation"
+        )
+
+
 if __name__ == "__main__":
     while True:
         input_query = input("Enter prompt: ")
         config = {"configurable": {"thread_id": str(uuid4())}}
 
         for chunk in supervisor.stream(
-            {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": input_query,
-                    }
-                ]
-            },
+            {"messages": [HumanMessage(content=input_query)], "generated_image": None},
             config=config,
+            stream_mode="updates",
         ):
-            pretty_print_messages(chunk)
-
-        final_message_history = chunk["supervisor"]["messages"]
-        for message in final_message_history:
-            message.pretty_print()
+            node_name = list(chunk)[0]
+            # pprint.pprint(chunk, indent=4)
+            for msg in chunk[node_name]["messages"]:
+                print(25 * "+")
+                print("node name: ", node_name)
+                print(msg)
+                print(25 * "-")

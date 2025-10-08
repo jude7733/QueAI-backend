@@ -4,6 +4,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage, ToolMessage
 from graph import supervisor
+import pprint
 import dotenv
 import json
 from pydantic import BaseModel
@@ -29,40 +30,88 @@ app.add_middleware(
 )
 
 
+def messages_to_json(messages):
+    """Convert a list of message objects to JSON-serializable format"""
+    result = []
+
+    for message in messages:
+        if isinstance(message, dict):
+            # Already a dict, just add it
+            result.append(message)
+        else:
+            # Message object, extract attributes
+            message_dict = {
+                "type": getattr(
+                    message,
+                    "type",
+                    type(message).__name__.replace("Message", "").lower(),
+                ),
+                "content": getattr(message, "content", None),
+                "id": getattr(message, "id", None),
+            }
+
+            if hasattr(message, "additional_kwargs"):
+                message_dict["additional_kwargs"] = message.additional_kwargs
+
+            if hasattr(message, "response_metadata"):
+                message_dict["response_metadata"] = message.response_metadata
+
+            if hasattr(message, "name"):
+                message_dict["name"] = message.name
+
+            if hasattr(message, "tool_calls"):
+                message_dict["tool_calls"] = message.tool_calls
+
+            if hasattr(message, "usage_metadata"):
+                message_dict["usage_metadata"] = message.usage_metadata
+
+            if hasattr(message, "tool_call_id"):
+                message_dict["tool_call_id"] = message.tool_call_id
+
+            result.append(message_dict)
+
+    return result
+
+
 async def event_generator(request: ChatRequest):
     config = {"configurable": {"thread_id": request.thread_id}}
+
+    sent_message_count = 0
+
     for chunk in supervisor.stream(
         {
             "messages": [HumanMessage(content=request.user_input)],
+            "generated_image": None,
         },
         config=config,
-        stream_mode="messages",
+        stream_mode="updates",
     ):
-        if not (isinstance(chunk, tuple) and len(chunk) == 2):
+        node_name = list(chunk)[0]
+        node_update = chunk[node_name]
+
+        print(f"Node update keys: {list(node_update.keys())}")
+        generated_image = node_update.get("generated_image")
+
+        all_messages = chunk[node_name]["messages"]
+        new_messages = all_messages[sent_message_count:]
+
+        if not new_messages and not generated_image:
             continue
 
-        message, metadata = chunk
+        print(25 * "+")
+        print("node name: ", node_name)
+        print(f"New messages ({len(new_messages)}):", new_messages)
+        if generated_image:
+            print("Generated image present:", bool(generated_image))
+        print(25 * "-")
 
         event_data = {
-            "node_name": metadata.get("langgraph_node", "unknown"),
-            "message_type": message.type,
-            "thread_id": metadata.get("thread_id"),
-            "payload": {},
+            "node_name": node_name,
+            "messages": messages_to_json(new_messages),
+            "generated_image": generated_image,
         }
 
-        content = getattr(message, "content", None)
-        if content:
-            event_data["payload"]["content"] = content
-
-        tool_calls = getattr(message, "tool_calls", [])
-        if tool_calls:
-            event_data["payload"]["tool_calls"] = tool_calls
-
-        if isinstance(message, ToolMessage):
-            event_data["payload"]["tool_call_id"] = message.tool_call_id
-
-        if not event_data["payload"]:
-            continue
+        sent_message_count = len(all_messages)
 
         yield json.dumps(event_data, indent=2) + "\n"
 
